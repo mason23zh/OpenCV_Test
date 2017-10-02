@@ -3,6 +3,11 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by Zhengyang on 2017/10/1.
@@ -10,8 +15,56 @@ import org.opencv.imgcodecs.Imgcodecs;
 public class main {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);}
+
+    private JFrame frame;
+    private JLabel lable;
+
     public static void main(String[] args) throws Exception {
 
+        main m = new main();
+        m.initGUI();
+        m.runMainLoop(args);
+    }
+
+    private void initGUI(){
+        frame = new JFrame("Camera Display");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 680);
+        lable = new JLabel();
+        frame.add(lable);
+        frame.setVisible(true);
+    }
+
+    private void runMainLoop(String[] args) {
+        ImageProcessor imageProcessor = new ImageProcessor();
+        Mat webcamMatImage = new Mat();
+        Image tempImage;
+
+        //Camera set up
+        VideoCapture capture = new VideoCapture(0);
+        //resolution
+        capture.set(Videoio.CAP_PROP_FRAME_WIDTH, 320);
+        capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, 240);
+
+        if (capture.isOpened()) {
+            while ((true)) {
+                capture.read(webcamMatImage);
+                if (!webcamMatImage.empty()) {
+                    tempImage = imageProcessor.toBufferedImage(webcamMatImage);
+                    ImageIcon imageIcon = new ImageIcon(tempImage, "Captured Video");
+                    lable.setIcon(imageIcon);
+                    frame.pack();
+                }else{
+                    System.out.println("Frame not captured");
+                    break;
+                }
+            }
+        }else{
+            System.out.println("Couldn't open capture.");
+        }
+    }
+
+    public static void displayPictureInGUI() {
         //For GUI display image
         String filePath = "F:\\Java_Project_NEW\\Project_0.1/test.jpg";
         Mat newImage = Imgcodecs.imread(filePath);
@@ -21,8 +74,6 @@ public class main {
             ImageViewer imageViewer = new ImageViewer();
             imageViewer.show(newImage, "loaded image");
         }
-
-
     }
 
     public static void exampleDisplay() throws Exception{
